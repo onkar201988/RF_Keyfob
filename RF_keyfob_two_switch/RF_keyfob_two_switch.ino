@@ -5,7 +5,7 @@
 #include <Vcc.h>
 #include <avr/wdt.h>
 
-#define debug                               // comment this to remove serial prints
+//#define debug                               // comment this to remove serial prints
 //----------------------------------------------------------------------------------------------------
 const uint64_t pipeAddress = 0xB00B1E50C3LL;// Create pipe address for the network, "LL" is for LongLong type
 const uint8_t rfChannel = 89;               // Set channel frequency default (chan 84 is 2.484GHz to 2.489GHz)
@@ -19,7 +19,7 @@ const float VccMin   = 1.8;                 // Minimum expected Vcc level, in Vo
 const float VccMax   = 3.2;                 // Maximum expected Vcc level, in Volts. (100%)
 const float VccCorrection = 1.0/1.0;        // Measured Vcc by multimeter divided by reported Vcc
 
-const int sleepDuration = 450;              // Sleep duration to report battery (8 Sec x number of times)(10800 for a day)
+const int sleepDuration = 10800;            // Sleep duration to report battery (8 Sec x number of times)(10800 for a day)
 volatile int sleepCounter = 0;              // Counter to keep sleep count
 const int aliveDuration = 38;               // Duration for alive counter update (8 Sec x number of times)(38 for 5 mins)
 volatile int aliveDurationCounter = 0;      // Counter for alive duration
@@ -71,7 +71,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(switch_two_pin), switchTwo_ISR, FALLING);
 
   #ifdef debug
-    Serial.begin(115200);                       //serial port to display received data
+    Serial.begin(9600);                       //serial port to display received data
     Serial.println("Keyfob is online...");
   #endif
 
@@ -119,7 +119,8 @@ void powerDownNRF()
 //----------------------------------------------------------------------------------------------------
 void sendData()
 {
-  delay(50);
+  powerUpNRF();
+  
   if (!rfRadio.write(send_payload, PAYLOAD_LENGTH))
   #ifdef debug
     {  //send data and remember it will retry if it fails
@@ -133,6 +134,8 @@ void sendData()
     {
     }
   #endif
+
+  powerDownNRF();
 }
 
 //----------------------------------------------------------------------------------------------------
